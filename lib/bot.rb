@@ -14,7 +14,6 @@ class Bot
     @token = vk_token
     @group_id = vk_group_id
     @hermes = hermes_client
-    @vk = Faraday.new(url: VK_API)
     @state = :idle
     @session = nil
   end
