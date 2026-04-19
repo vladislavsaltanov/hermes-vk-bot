@@ -52,6 +52,9 @@ class Bot
           payload: parse_payload(msg['payload'])
         )
       end
+    rescue StandardError => e
+      puts "Loop error: #{e.message}, continuing..."
+      sleep(2)
     end
   end
 
@@ -210,7 +213,7 @@ class Bot
 
   def sessions_keyboard(sessions)
     rows = sessions.map { |s| [btn(s.name.slice(0, 40), 'select_session', 'secondary', extra: { id: s.id })] }
-    rows << [btn('Главное меню', 'main_menu')]
+    rows << [btn('Главное меню', 'main_menu', 'negative')]
     { one_time: true, buttons: rows }
   end
 
@@ -280,12 +283,26 @@ class Bot
     return send_message(user_id, 'Сообщение пустое.', chat_keyboard) if text.empty?
 
     @session.add_message('user', text)
+
+    typing_thread = Thread.new do
+      while Thread.current[:active]
+        set_typing(user_id)
+        sleep(8)
+      end
+    end
+    typing_thread[:active] = true
+
     reply = @hermes.chat(@session.messages)
+    typing_thread[:active] = false
+    typing_thread.join
+
     @session.add_message('assistant', reply)
     send_message(user_id, strip_markdown(reply), chat_keyboard)
   rescue HermesClient::Error => e
+    typing_thread&.kill
     send_message(user_id, "Ошибка Hermes: #{e.message}", chat_keyboard)
   rescue Faraday::TimeoutError
+    typing_thread&.kill
     send_message(user_id, 'Hermes думает слишком долго, попробуй ещё раз.', chat_keyboard)
   end
 
@@ -293,7 +310,7 @@ class Bot
     {
       one_time: false,
       buttons: [
-        [btn('Очистить историю', 'clear_history', 'negative'), btn('Меню', 'main_menu')]
+        [btn('Очистить историю', 'clear_history', 'negative'), btn('Вернуться в меню', 'main_menu')]
       ]
     }
   end
@@ -334,5 +351,14 @@ class Bot
     JSON.parse(response.body)
   rescue Faraday::TimeoutError
     { 'updates' => [] }
+  end
+
+  def set_typing(peer_id)
+    vk_request('https://api.vk.com/method/messages.setActivity', {
+                 peer_id: peer_id,
+                 type: 'typing',
+                 access_token: @token,
+                 v: API_VERSION
+               })
   end
 end
