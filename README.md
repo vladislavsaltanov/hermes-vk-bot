@@ -5,7 +5,7 @@ draft:
 1. Если Hermes Agent запущен из под WSL, то необходимо пробросить порт из локальной сети WSL в нашу (если бот запущен на том же компьютере). Для этого необходимо выполнить команду в PowerShell от имени администратора:
 ```
 $wslIp = (wsl hostname -I).Trim().Split()[0]
-netsh interface portproxy add v4tov4 listenport=8080 listenaddress=127.0.0.1 connectport=8080 connectaddress=$wslIp
+netsh interface portproxy add v4tov4 listenport=8642 listenaddress=127.0.0.1 connectport=8642 connectaddress=192.168.0.136
 ```
 
 2. В .env необходимо добавить ALLOWED_USERS и подставить туда через запятую айди пользователей, которые допускаются к использованию бота. Пример:

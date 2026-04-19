@@ -4,10 +4,7 @@ require 'dotenv/load'
 require 'bot'
 
 # if .env variable is empty then overwrite with default one
-ENV['HERMES_URL'] ||= 'http://127.0.0.1:8080'
-
-res = Faraday.get("https://api.vk.com/method/groups.getLongPollServer?group_id=#{ENV['VK_GROUP_ID']}&access_token=#{ENV['VK_TOKEN']}&v=5.131")
-puts res.body
+ENV['HERMES_URL'] ||= 'http://127.0.0.1:8642'
 
 Bot.new(
   vk_token: ENV.fetch('VK_TOKEN'),
