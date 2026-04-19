@@ -60,19 +60,9 @@ class Bot
   ##
   # This function retrieves the long poll server information for a VK group using the VK API.
   def get_long_poll_server
-    res = Faraday.get('https://api.vk.com/method/groups.getLongPollServer', {
-                        group_id: @group_id,
-                        access_token: @token,
-                        v: API_VERSION
-                      })
-    JSON.parse(res.body)['response']
-  end
-
-  ##
-  # The `poll` function sends a request to a server with specified parameters and returns the parsed
-  # JSON response.
-  def poll(server:, key:, ts:)
-    JSON.parse(Faraday.get(server, act: 'a_check', key: key, ts: ts, wait: 25).body)
+    vk_request('https://api.vk.com/method/groups.getLongPollServer', {
+                 group_id: @group_id, access_token: @token, v: API_VERSION
+               })&.dig('response')
   end
 
   ## Sends a message to a specified peer ID using the VK API with optional keyboard parameters.
@@ -85,7 +75,7 @@ class Bot
       v: API_VERSION
     }
     params[:keyboard] = JSON.dump(keyboard) if keyboard
-    Faraday.get('https://api.vk.com/method/messages.send', params)
+    vk_request('https://api.vk.com/method/messages.send', params)
   end
 
   ##
@@ -155,8 +145,14 @@ class Bot
     when 'new_session' then start_new_session(user_id)
     when 'my_sessions' then show_sessions(user_id)
     when '/start'      then show_main_menu(user_id, 'Привет! Выбери действие:')
+    when 'status' then show_status(user_id)
     else show_main_menu(user_id, 'Выбери действие:')
     end
+  end
+
+  def show_status(user_id)
+    text = @hermes.healthy? ? 'Hermes онлайн.' : 'Hermes недоступен.'
+    send_message(user_id, text, main_keyboard)
   end
 
   ##
@@ -289,6 +285,8 @@ class Bot
     send_message(user_id, strip_markdown(reply), chat_keyboard)
   rescue HermesClient::Error => e
     send_message(user_id, "Ошибка Hermes: #{e.message}", chat_keyboard)
+  rescue Faraday::TimeoutError
+    send_message(user_id, 'Hermes думает слишком долго, попробуй ещё раз.', chat_keyboard)
   end
 
   def chat_keyboard
@@ -312,5 +310,29 @@ class Bot
       .gsub(/\*\*(.*?)\*\*/, '\1') # **жирный**
       .gsub(/`(.*?)`/, '\1') # `код`
       .gsub(/^\#{2,6}\s/, '') # заголовки
+  end
+
+  # vk seems to have issues with tcp connection so we need to retry requests in case of errors
+  def vk_request(url, params, retries: 3)
+    retries.times do |i|
+      response = Faraday.new { |f| f.options.timeout = 3 }.get(url, params)
+      body = JSON.parse(response.body)
+      return body unless body['error']
+
+      puts "VK error: #{body['error']['error_msg']}, retry #{i + 1}/#{retries}"
+      sleep(1)
+    end
+    nil
+  rescue Faraday::ConnectionFailed, Faraday::TimeoutError => e
+    puts "Connection error: #{e.message}, retry..."
+    retry if (retries -= 1) > 0
+    nil
+  end
+
+  def poll(server:, key:, ts:)
+    response = Faraday.new { |f| f.options.timeout = 30 }.get(server, act: 'a_check', key: key, ts: ts, wait: 25)
+    JSON.parse(response.body)
+  rescue Faraday::TimeoutError
+    { 'updates' => [] }
   end
 end
