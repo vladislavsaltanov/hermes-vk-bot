@@ -7,3 +7,8 @@ draft:
 $wslIp = (wsl hostname -I).Trim().Split()[0]
 netsh interface portproxy add v4tov4 listenport=8080 listenaddress=127.0.0.1 connectport=8080 connectaddress=$wslIp
 ```
+
+2. В .env необходимо добавить ALLOWED_USERS и подставить туда через запятую айди пользователей, которые допускаются к использованию бота. Пример:
+```
+ALLOWED_USERS=333222111
+```
