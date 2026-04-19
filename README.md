@@ -12,3 +12,5 @@ netsh interface portproxy add v4tov4 listenport=8080 listenaddress=127.0.0.1 con
 ```
 ALLOWED_USERS=333222111
 ```
+
+3. В .env необходимо добавить VK_GROUP_ID сообщества, в котором будет бот, а также VK_TOKEN этого сообщества. Версия vk_longpool - 5.131.
