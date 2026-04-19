@@ -39,6 +39,8 @@ class Bot
         next unless msg
         # ignore group chat messages
         next if msg['from_id'].to_i.negative?
+        # ignore messages from users not in the allowed list
+        next unless allowed?(msg['from_id'])
 
         text = msg['text'].to_s.strip
         # ignore empty messages
@@ -51,6 +53,8 @@ class Bot
       end
     end
   end
+
+  private
 
   ##
   # This function retrieves the long poll server information for a VK group using the VK API.
@@ -79,5 +83,10 @@ class Bot
               access_token: @token,
               v: API_VERSION
             })
+  end
+
+  def allowed?(user_id)
+    allowed = ENV.fetch('ALLOWED_USERS', '').split(',').map(&:strip)
+    allowed.include?(user_id.to_s)
   end
 end
