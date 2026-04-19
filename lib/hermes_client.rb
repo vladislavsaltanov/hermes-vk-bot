@@ -6,7 +6,6 @@ require 'json'
 class HermesClient # rubocop:disable Style/Documentation
   class Error < StandardError; end
 
-  # The `initialize` method in the `HermesClient` class is a constructor method that gets called
   def
   # when a new instance of the class is created. It takes two keyword arguments `base_url` and
   # `api_key`, which are used to set up a connection to the specified base URL with the provided
@@ -19,7 +18,7 @@ class HermesClient # rubocop:disable Style/Documentation
   end
 
   ##
-  # The `chat` function sends messages to a chat API endpoint and returns the response content from
+  # Sends messages to a chat API endpoint and returns the response content from
   # the first choice.
   # Args:
   #   messages: The `messages` parameter in the `chat` method is expected to be an array of messages
@@ -36,7 +35,7 @@ class HermesClient # rubocop:disable Style/Documentation
   end
 
   ##
-  # The `healthy?` function checks if a connection to a health endpoint returns a status code of 200
+  # Checks if a connection to a health endpoint returns a status code of 200
   # and returns true if successful, otherwise false.
   def healthy?
     @conn.get('/health').status == 200

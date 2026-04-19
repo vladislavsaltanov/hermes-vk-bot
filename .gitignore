@@ -56,3 +56,4 @@ build-iPhoneSimulator/
 # .rubocop-https?--*
 bot.db
 test_bot.db
+.vscode/settings.json

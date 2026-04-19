@@ -7,19 +7,17 @@ class ChatSession
     attr_writer :db_path
 
     ##
-    # The `db_path` function returns the database path from the environment variable `DB_PATH` or
+    # Returns the database path from the environment variable `DB_PATH` or
     # defaults to 'bot.db'.
     def db_path
       @db_path ||= ENV.fetch('DB_PATH', 'bot.db')
     end
 
     ##
-    # The `setup_db` function creates two tables, `sessions` and `messages`, in a database if they do
+    # Creates two tables, `sessions` and `messages`, in a database if they do
     # not already exist.
     def setup_db
       with_db do |db|
-        # The `db.execute(<<~SQL)` syntax in Ruby is a way to write multi-line strings in a cleaner
-        # and more readable format.
         db.execute(<<~SQL)
           CREATE TABLE IF NOT EXISTS sessions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -39,7 +37,7 @@ class ChatSession
     end
 
     ##
-    # The `create` function inserts a new record into the sessions table with the given name and
+    # Inserts a new record into the sessions table with the given name and
     # returns a new object with the generated id and name.
     # Args:
     #   name: The `create` method takes a `name` parameter as input. This parameter is used to insert
@@ -54,7 +52,7 @@ class ChatSession
     end
 
     ##
-    # This Ruby function retrieves all rows from a database table called "sessions" and returns them
+    # Retrieves all rows from a database table called "sessions" and returns them
     # as objects.
     def all
       rows = nil
@@ -63,7 +61,7 @@ class ChatSession
     end
 
     ##
-    # This Ruby function finds a session by its ID in a database table and returns the corresponding
+    # Finds a session by its ID in a database table and returns the corresponding
     # row as an object.
     #
     # Args:
@@ -77,7 +75,7 @@ class ChatSession
     end
 
     ##
-    # The `with_db` function opens a SQLite3 database connection, yields it to a block of code, and
+    # Opens a SQLite3 database connection, yields it to a block of code, and
     # ensures the database connection is closed after the block execution.
     def with_db
       db = SQLite3::Database.new(db_path)
@@ -87,12 +85,11 @@ class ChatSession
     end
   end
 
-  # The `attr_reader :id, :name, :created_at` line in the `ChatSession` class is creating getter
-  # methods for the instance variables `@id`, `@name`, and `@created_at`.
+  # Getter methods for the instance variables `@id`, `@name`, and `@created_at`.
   attr_reader :id, :name, :created_at
 
   ##
-  # The `initialize` function initializes a new instance of the `ChatSession` class with the given
+  # Initializes a new instance of the `ChatSession` class with the given
   # id, name, and created_at values.
   def initialize(id, name, created_at = nil)
     @id = id
@@ -101,7 +98,7 @@ class ChatSession
   end
 
   ##
-  # The `add_message` function inserts a new message into a database table with the provided role and
+  # Inserts a new message into a database table with the provided role and
   # content values.
   #
   # Args:
@@ -118,7 +115,7 @@ class ChatSession
   end
 
   ##
-  # This Ruby function retrieves messages from a database based on a session ID and returns them as an
+  # Retrieves messages from a database based on a session ID and returns them as an
   # array of hashes containing role and content.
   def messages
     rows = nil
@@ -133,7 +130,7 @@ class ChatSession
   end
 
   ##
-  # This Ruby function clears all messages associated with a specific session ID from the database.
+  # Clears all messages associated with a specific session ID from the database.
   def clear_messages
     self.class.with_db { |db| db.execute('DELETE FROM messages WHERE session_id = ?', [@id]) }
   end
