@@ -7,7 +7,7 @@ require_relative 'chat_session'
 
 class Bot
   # constants for VK API
-  VK_API = 'https://api.vk.com/method'
+  VK_API = 'https://api.vk.com/method/'
   API_VERSION = '5.131'
 
   def initialize(vk_token:, vk_group_id:, hermes_client:)
@@ -59,11 +59,11 @@ class Bot
   ##
   # This function retrieves the long poll server information for a VK group using the VK API.
   def get_long_poll_server
-    res = @vk.get('/groups.getLongPollServer', {
-                    group_id: @group_id,
-                    access_token: @token,
-                    v: API_VERSION
-                  })
+    res = Faraday.get('https://api.vk.com/method/groups.getLongPollServer', {
+                        group_id: @group_id,
+                        access_token: @token,
+                        v: API_VERSION
+                      })
     JSON.parse(res.body)['response']
   end
 
@@ -76,13 +76,13 @@ class Bot
 
   ## The `send_message` function sends a message to a specified peer ID using the VK API with the
   def send_message(peer_id, text)
-    @vk.get('/messages.send', {
-              peer_id: peer_id,
-              message: text,
-              random_id: rand(1_000_000),
-              access_token: @token,
-              v: API_VERSION
-            })
+    Faraday.get('https://api.vk.com/method/messages.send', {
+                  peer_id: peer_id,
+                  message: text,
+                  random_id: rand(1_000_000),
+                  access_token: @token,
+                  v: API_VERSION
+                })
   end
 
   def allowed?(user_id)
