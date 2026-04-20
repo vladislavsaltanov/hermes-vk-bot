@@ -142,6 +142,82 @@ bundle exec rspec spec/chat_session_spec.rb
 bundle exec rubocop
 ```
 
+## Docker
+
+Локальная сборка образа:
+
+```bash
+docker build -t hermes-vk-bot:local .
+```
+
+Локальный запуск контейнера:
+
+```bash
+docker run --rm --name hermes-vk-bot \
+	--env-file .env \
+	-e DB_PATH=/data/bot.db \
+	-v "${PWD}/data:/data" \
+	hermes-vk-bot:local
+```
+
+## CI/CD (GitHub Actions)
+
+### Что настроено в репозитории
+
+- CI: [`.github/workflows/ci.yml`](.github/workflows/ci.yml)
+	- запускается на `push` и `pull_request` в ветки `main` и `develop`;
+	- выполняет `bundle exec rubocop`;
+	- выполняет `bundle exec rspec` (включая mock-тесты через WebMock).
+
+- CD: [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml)
+	- запускается автоматически только после успешного workflow `CI` на `push` в `main`;
+	- собирает Docker-образ и публикует в GHCR;
+	- подключается к серверу по SSH и перезапускает контейнер.
+
+### Какие Secrets нужны в GitHub
+
+Добавьте в `Settings -> Secrets and variables -> Actions`:
+
+- `DEPLOY_HOST` - адрес сервера
+- `DEPLOY_USER` - SSH-пользователь на сервере
+- `DEPLOY_SSH_KEY` - приватный SSH-ключ (многострочный, целиком)
+- `DEPLOY_CONTAINER_NAME` - имя контейнера (например `hermes-vk-bot`)
+- `DEPLOY_ENV_FILE` - путь до env-файла на сервере (например `/opt/hermes-vk-bot/.env`)
+- `DEPLOY_DATA_DIR` - каталог на сервере для SQLite (например `/opt/hermes-vk-bot/data`)
+- `GHCR_USERNAME` - GitHub-логин с правом читать пакеты
+- `GHCR_TOKEN` - GitHub token/PAT с правом `read:packages`
+
+### Подготовка сервера
+
+1. Установите Docker.
+2. Создайте env-файл, например `/opt/hermes-vk-bot/.env`.
+3. Заполните в нем переменные:
+
+```env
+VK_TOKEN=...
+VK_GROUP_ID=...
+ALLOWED_USERS=...
+HERMES_URL=...
+HERMES_API_KEY=...
+```
+
+4. Убедитесь, что у пользователя из `DEPLOY_USER` есть право запускать `docker`.
+
+### Как это работает в потоке разработки
+
+1. Вы пушите изменения в `develop` -> автоматически стартует CI.
+2. Открываете PR `develop -> main`.
+3. После merge в `main`:
+	 - снова запускается CI,
+	 - при успехе автоматически запускается deploy workflow.
+
+### Чтобы main принимал только зеленые изменения
+
+Включите branch protection для `main`:
+- `Require a pull request before merging`
+- `Require status checks to pass before merging`
+- выберите обязательный check: `CI / lint_and_test`
+
 ## Хранение данных
 
 SQLite содержит три таблицы:
