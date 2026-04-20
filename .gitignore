@@ -57,4 +57,3 @@ build-iPhoneSimulator/
 bot.db
 test_bot.db
 .vscode/settings.json
-.rubocop.yml
