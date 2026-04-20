@@ -3,6 +3,7 @@ FROM ruby:3.4.0-slim
 
 ENV APP_HOME=/app \
     BUNDLE_WITHOUT=development:test \
+    BUNDLE_FORCE_RUBY_PLATFORM=true \
     BUNDLE_JOBS=4 \
     BUNDLE_RETRY=3 \
     DB_PATH=/data/bot.db
