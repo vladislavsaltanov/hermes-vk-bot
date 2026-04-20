@@ -33,7 +33,31 @@ class ChatSession
             content TEXT NOT NULL
           )
         SQL
+        db.execute(<<~SQL)
+          CREATE TABLE IF NOT EXISTS user_state (
+            user_id INTEGER PRIMARY KEY,
+            state TEXT NOT NULL DEFAULT 'idle',
+            session_id INTEGER
+          )
+        SQL
       end
+    end
+
+    def save_state(user_id, state_name, session_id = nil)
+      with_db do |db|
+        db.execute(
+          'INSERT OR REPLACE INTO user_state (user_id, state, session_id) VALUES (?, ?, ?)',
+          [user_id, state_name, session_id]
+        )
+      end
+    end
+
+    def load_state(user_id)
+      row = nil
+      with_db do |db|
+        row = db.get_first_row('SELECT state, session_id FROM user_state WHERE user_id = ?', [user_id])
+      end
+      row ? { state: row[0], session_id: row[1] } : { state: 'idle', session_id: nil }
     end
 
     ##
