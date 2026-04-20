@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+jobs:
+  lint_and_test:
+    runs-on: ubuntu-latest
+    env:
+      HERMES_URL: http://127.0.0.1:8642
+      BUNDLE_FORCE_RUBY_PLATFORM: "true"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install sqlite3 build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libsqlite3-dev pkg-config
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: .ruby-version
+
+      - name: Install gems
+        run: bundle install --jobs 4 --retry 3
+
+      - name: RuboCop
+        run: bundle exec rubocop
+
+      - name: RSpec
+        run: bundle exec rspec

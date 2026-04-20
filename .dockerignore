@@ -1,0 +1,10 @@
+.git
+.github
+.env
+bot.db
+test_bot.db
+spec
+coverage
+tmp
+.vscode
+.ruby-lsp

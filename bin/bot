@@ -1,0 +1,19 @@
+#!/usr/bin/env ruby
+
+# frozen_string_literal: true
+
+$LOAD_PATH.unshift(File.join(__dir__, '..', 'lib'))
+require 'dotenv/load'
+require 'bot'
+
+# if .env variable is empty then overwrite with default one
+ENV['HERMES_URL'] ||= 'http://127.0.0.1:8642'
+
+Bot.new(
+  vk_token: ENV.fetch('VK_TOKEN'),
+  vk_group_id: ENV.fetch('VK_GROUP_ID'),
+  hermes_client: HermesClient.new(
+    base_url: ENV.fetch('HERMES_URL'),
+    api_key: ENV.fetch('HERMES_API_KEY', 'none')
+  )
+).run
