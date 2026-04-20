@@ -58,4 +58,3 @@ bot.db
 test_bot.db
 .vscode/settings.json
 .rubocop.yml
-.ruby-version
