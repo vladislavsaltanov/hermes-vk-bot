@@ -3,6 +3,7 @@
 module States
   class ConfirmingClearState < BaseState
     def handle(user_id, _text, payload)
+      # Handles confirmation buttons and re-prompts on any other input.
       case payload&.dig('cmd')
       when 'confirm_yes'
         @bot.session.clear_messages

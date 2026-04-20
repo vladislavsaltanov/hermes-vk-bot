@@ -6,10 +6,8 @@ require 'json'
 class HermesClient
   class Error < StandardError; end
 
+  # Prepares persistent HTTP connection with auth and timeouts.
   def
-  # when a new instance of the class is created. It takes two keyword arguments `base_url` and
-  # `api_key`, which are used to set up a connection to the specified base URL with the provided
-  # API key.
   initialize(base_url:, api_key:)
     @conn = Faraday.new(url: base_url) do |f|
       f.headers['Authorization'] = "Bearer #{api_key}"
@@ -19,13 +17,7 @@ class HermesClient
     end
   end
 
-  ##
-  # Sends messages to a chat API endpoint and returns the response content from
-  # the first choice.
-  # Args:
-  #   messages: The `messages` parameter in the `chat` method is expected to be an array of messages
-  # that will be sent to the chat service for processing. Each message in the array should be a string
-  # representing a part of the conversation.
+  # Sends chat history and returns assistant text from first choice.
   def chat(messages)
     response = @conn.post('/v1/chat/completions') do |req|
       req.body = JSON.dump({ model: 'hermes-agent', messages: messages })
@@ -36,9 +28,7 @@ class HermesClient
       raise(Error, 'Empty response')
   end
 
-  ##
-  # Checks if a connection to a health endpoint returns a status code of 200
-  # and returns true if successful, otherwise false.
+  # Health check used in the bot status command.
   def healthy?
     @conn.get('/health').status == 200
   rescue StandardError

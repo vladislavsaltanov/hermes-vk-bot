@@ -2,6 +2,7 @@
 
 module States
   class SelectingSessionState < BaseState
+    # Handles session selection menu commands.
     def handle(user_id, _text, payload)
       case payload&.dig('cmd')
       when 'select_session'
@@ -28,6 +29,7 @@ module States
     private
 
     def show_sessions(user_id)
+      # Re-render selection keyboard from the latest persisted list.
       sessions = ChatSession.all.first(5)
       if sessions.empty?
         transition_to(IdleState, user_id)

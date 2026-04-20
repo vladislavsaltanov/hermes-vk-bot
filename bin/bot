@@ -6,7 +6,7 @@ $LOAD_PATH.unshift(File.join(__dir__, '..', 'lib'))
 require 'dotenv/load'
 require 'bot'
 
-# if .env variable is empty then overwrite with default one
+# Use local Hermes endpoint by default when HERMES_URL is not provided.
 ENV['HERMES_URL'] ||= 'http://127.0.0.1:8642'
 
 Bot.new(
