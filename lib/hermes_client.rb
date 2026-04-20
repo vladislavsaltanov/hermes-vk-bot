@@ -3,7 +3,7 @@
 require 'faraday'
 require 'json'
 
-class HermesClient # rubocop:disable Style/Documentation
+class HermesClient
   class Error < StandardError; end
 
   def
