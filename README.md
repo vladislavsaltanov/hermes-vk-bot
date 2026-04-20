@@ -181,6 +181,7 @@ docker run --rm --name hermes-vk-bot \
 - `DEPLOY_HOST` - адрес сервера
 - `DEPLOY_USER` - SSH-пользователь на сервере
 - `DEPLOY_SSH_KEY` - приватный SSH-ключ (многострочный, целиком)
+- `DEPLOY_PORT` - SSH-порт (опционально, по умолчанию `22`)
 - `DEPLOY_CONTAINER_NAME` - имя контейнера (например `hermes-vk-bot`)
 - `DEPLOY_ENV_FILE` - путь до env-файла на сервере (например `/opt/hermes-vk-bot/.env`)
 - `DEPLOY_DATA_DIR` - каталог на сервере для SQLite (например `/opt/hermes-vk-bot/data`)
