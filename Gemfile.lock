@@ -21,6 +21,7 @@ GEM
     language_server-protocol (3.17.0.5)
     lint_roller (1.1.0)
     logger (1.7.0)
+    mini_portile2 (2.8.9)
     net-http (0.9.1)
       uri (>= 0.11.1)
     parallel (2.0.1)
@@ -61,7 +62,10 @@ GEM
       parser (>= 3.3.7.2)
       prism (~> 1.7)
     ruby-progressbar (1.13.0)
+    sqlite3 (2.9.3)
+      mini_portile2 (~> 2.8.0)
     sqlite3 (2.9.3-x64-mingw-ucrt)
+    sqlite3 (2.9.3-x86_64-linux-gnu)
     unicode-display_width (3.2.0)
       unicode-emoji (~> 4.1)
     unicode-emoji (4.2.0)
@@ -72,7 +76,9 @@ GEM
       hashdiff (>= 0.4.0, < 2.0.0)
 
 PLATFORMS
+  ruby
   x64-mingw-ucrt
+  x86_64-linux
 
 DEPENDENCIES
   dotenv
