@@ -10,7 +10,7 @@ class HermesClient
   def
   initialize(base_url:, api_key:)
     @conn = Faraday.new(url: base_url) do |f|
-      f.headers['Authorization'] = "Bearer #{api_key}"
+      f.headers['Authorization'] = "Bearer #{api_key}" unless api_key.to_s.strip.empty?
       f.headers['Content-Type'] = 'application/json'
       f.options.timeout = 300 # 5 минут на ответ
       f.options.open_timeout = 10 # 10 секунд на соединение

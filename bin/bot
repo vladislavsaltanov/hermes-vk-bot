@@ -14,6 +14,6 @@ Bot.new(
   vk_group_id: ENV.fetch('VK_GROUP_ID'),
   hermes_client: HermesClient.new(
     base_url: ENV.fetch('HERMES_URL'),
-    api_key: ENV.fetch('HERMES_API_KEY', 'none')
+    api_key: ENV.fetch('HERMES_API_KEY', '')
   )
 ).run
