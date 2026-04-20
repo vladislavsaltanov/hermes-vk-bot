@@ -1,3 +1,6 @@
+# frozen_string_literal: true
+
+require 'fileutils'
 require_relative '../lib/chat_session'
 
 RSpec.describe ChatSession do
@@ -7,7 +10,7 @@ RSpec.describe ChatSession do
   end
 
   after(:each) do
-    File.delete('test_bot.db') if File.exist?('test_bot.db')
+    FileUtils.rm_f('test_bot.db')
     ChatSession.instance_variable_set(:@db_path, nil)
   end
 

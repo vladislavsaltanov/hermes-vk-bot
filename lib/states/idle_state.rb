@@ -9,8 +9,7 @@ module States
       when 'new_session' then start_new_session(user_id)
       when 'my_sessions' then show_sessions(user_id)
       when 'status' then show_status(user_id)
-      when '/start' then @bot.show_main_menu(user_id, 'Привет! Выбери действие:')
-      when 'Привет', 'привет' then @bot.show_main_menu(user_id, 'Привет! Выбери действие:')
+      when '/start', 'Привет', 'привет' then @bot.show_main_menu(user_id, 'Привет! Выбери действие:')
       else @bot.show_main_menu(user_id, 'Выбери действие:')
       end
     end

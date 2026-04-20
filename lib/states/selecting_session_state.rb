@@ -2,7 +2,7 @@
 
 module States
   class SelectingSessionState < BaseState
-    def handle(user_id, text, payload)
+    def handle(user_id, _text, payload)
       case payload&.dig('cmd')
       when 'select_session'
         session = ChatSession.find(payload['id'])

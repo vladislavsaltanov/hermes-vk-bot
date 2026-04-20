@@ -2,7 +2,7 @@
 
 module States
   class ConfirmingClearState < BaseState
-    def handle(user_id, text, payload)
+    def handle(user_id, _text, payload)
       case payload&.dig('cmd')
       when 'confirm_yes'
         @bot.session.clear_messages

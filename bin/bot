@@ -1,4 +1,6 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
+
 $LOAD_PATH.unshift(File.join(__dir__, '..', 'lib'))
 require 'dotenv/load'
 require 'bot'
@@ -10,7 +12,7 @@ Bot.new(
   vk_token: ENV.fetch('VK_TOKEN'),
   vk_group_id: ENV.fetch('VK_GROUP_ID'),
   hermes_client: HermesClient.new(
-    base_url: ENV['HERMES_URL'],
+    base_url: ENV.fetch('HERMES_URL'),
     api_key: ENV.fetch('HERMES_API_KEY', 'none')
   )
 ).run

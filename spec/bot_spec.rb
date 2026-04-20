@@ -1,3 +1,6 @@
+# frozen_string_literal: true
+
+require 'fileutils'
 require 'spec_helper'
 require_relative '../lib/bot'
 
@@ -14,7 +17,7 @@ RSpec.describe Bot do
   end
 
   after do
-    File.delete('test_bot.db') if File.exist?('test_bot.db')
+    FileUtils.rm_f('test_bot.db')
     ChatSession.instance_variable_set(:@db_path, nil)
   end
 
