@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM ruby:3.4.0-slim
+FROM ruby:3.4-slim
 
 ENV APP_HOME=/app \
     BUNDLE_WITHOUT=development:test \
