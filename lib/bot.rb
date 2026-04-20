@@ -11,7 +11,7 @@ require_relative 'states/selecting_session_state'
 require_relative 'states/confirming_clear_state'
 
 class Bot
-  # constants for VK API
+  # VK API constants.
   VK_API = 'https://api.vk.com/method/'
   API_VERSION = '5.131'
 
@@ -29,13 +29,14 @@ class Bot
 
   def run
     ChatSession.setup_db
+    # Persisted state is restored for the first allowed user.
     allowed_user = ENV.fetch('ALLOWED_USERS', '').split(',').first&.strip&.to_i
     restore_state(allowed_user) if allowed_user
     lp = get_long_poll_server
     server = lp['server']
     key = lp['key']
     ts = lp['ts']
-    # logs
+    # Basic startup log for local debugging.
     puts 'Bot started.'
 
     loop do
@@ -56,7 +57,7 @@ class Bot
         # ignore empty messages
         next if text.empty?
 
-        # sending message to the Hermes agent and getting a reply
+        # Delegate user input handling to the current FSM state.
         @state.handle(msg['from_id'], text, parse_payload(msg['payload']))
       end
     rescue StandardError => e
@@ -65,7 +66,7 @@ class Bot
     end
   end
 
-  ## Sends a message to a specified peer ID using the VK API with optional keyboard parameters.
+  # Sends a message to VK with an optional keyboard payload.
   def send_message(peer_id, text, keyboard = nil)
     params = {
       peer_id: peer_id,
@@ -150,40 +151,19 @@ class Bot
              end
   end
 
-  ##
-  # This function retrieves the long poll server information for a VK group using the VK API.
   def get_long_poll_server
     vk_request('https://api.vk.com/method/groups.getLongPollServer', {
                  group_id: @group_id, access_token: @token, v: API_VERSION
                })&.dig('response')
   end
 
-  ##
-  # The `allowed?` function checks if a user ID is included in a list of allowed users stored in the
-  # environment variable `ALLOWED_USERS`.
-  #
-  # Args:
-  #   user_id: The `allowed?` method checks if a given `user_id` is included in the list of allowed
-  # users stored in the `ALLOWED_USERS` environment variable. The `user_id` parameter is the ID of the
-  # user that you want to check for permission.
+  # Checks whether user is in the allowlist from ALLOWED_USERS.
   def allowed?(user_id)
     allowed = ENV.fetch('ALLOWED_USERS', '').split(',').map(&:strip)
     allowed.include?(user_id.to_s)
   end
 
-  ##
-  # The `parse_payload` function takes a raw input, attempts to parse it as JSON, and returns the
-  # parsed result or `nil` if parsing fails.
-  #
-  # Args:
-  #   raw: The `parse_payload` method takes a `raw` parameter, which is expected to be a JSON string.
-  # The method attempts to parse this JSON string using `JSON.parse(raw)`. If parsing is successful,
-  # it returns the parsed JSON object. If there is a `JSON::ParserError` (
-  #
-  # Returns:
-  #   The `parse_payload` method will return the parsed JSON data if parsing is successful. If there
-  # is a `JSON::ParserError` during parsing, it will return `nil`. If the `raw` input is `nil` or an
-  # empty string, it will also return `nil`.
+  # Parses VK payload JSON; returns nil for empty or invalid payload.
   def parse_payload(raw)
     return nil if raw.nil? || raw.to_s.empty?
 
@@ -192,7 +172,7 @@ class Bot
     nil
   end
 
-  # vk seems to have issues with tcp connection so we need to retry requests in case of errors
+  # Retries VK request because long poll API occasionally returns transient errors.
   def vk_request(url, params, retries: 3)
     retries.times do |i|
       response = Faraday.new { |f| f.options.timeout = 3 }.get(url, params)

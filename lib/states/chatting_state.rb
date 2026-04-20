@@ -22,6 +22,7 @@ module States
     def chat(user_id, text)
       return @bot.send_message(user_id, 'Сообщение пустое.', @bot.chat_keyboard) if text.empty?
 
+      # Typing indicator is sent in a separate loop while Hermes is processing.
       typing_thread = start_typing(user_id)
       @bot.session.add_message('user', text)
       reply = @bot.hermes.chat(@bot.session.messages)
@@ -37,6 +38,7 @@ module States
     end
 
     def start_typing(user_id)
+      # VK expects activity updates periodically, otherwise typing status disappears.
       thread = Thread.new do
         while Thread.current[:active]
           @bot.set_typing(user_id)

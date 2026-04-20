@@ -3,6 +3,7 @@
 module States
   class IdleState < BaseState
     def handle(user_id, text, payload)
+      # Commands can come either from button payload or plain text.
       cmd = payload&.dig('cmd') || text
 
       case cmd
@@ -24,6 +25,7 @@ module States
     end
 
     def show_sessions(user_id)
+      # Show only the latest sessions to keep keyboard compact.
       sessions = ChatSession.all.first(5)
       if sessions.empty?
         @bot.show_main_menu(user_id, 'Нет сохранённых диалогов.')
