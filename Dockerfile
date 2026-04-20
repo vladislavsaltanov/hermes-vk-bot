@@ -11,7 +11,7 @@ ENV APP_HOME=/app \
 WORKDIR ${APP_HOME}
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends build-essential libsqlite3-dev ca-certificates \
+    && apt-get install -y --no-install-recommends build-essential libsqlite3-dev pkg-config ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 COPY Gemfile Gemfile.lock ./
