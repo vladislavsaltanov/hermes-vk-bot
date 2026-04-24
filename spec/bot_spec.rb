@@ -64,6 +64,12 @@ RSpec.describe Bot do
       expect(session.messages.length).to eq(2)
     end
 
+    it 'handles stop_request command' do
+      handle(payload: { 'cmd' => 'stop_request' })
+      expect(WebMock).to(have_requested(:get, /messages.send/)
+        .with { |req| CGI.unescape(req.uri.query).include?('Выполнение остановлено') })
+    end
+
     it 'transitions to confirming_clear on clear_history' do
       handle(payload: { 'cmd' => 'clear_history' })
       expect(bot.state).to be_a(States::ConfirmingClearState)
