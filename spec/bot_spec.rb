@@ -25,6 +25,11 @@ RSpec.describe Bot do
     bot.state.handle(1, text, payload)
   end
 
+  def wait_for_inflight(timeout: 1.0)
+    deadline = Time.now + timeout
+    sleep(0.01) while bot.inflight_active?(1) && Time.now < deadline
+  end
+
   context 'in :idle state' do
     it 'starts new session on new_session cmd' do
       handle(payload: { 'cmd' => 'new_session' })
@@ -54,14 +59,24 @@ RSpec.describe Bot do
   context 'in :chatting state' do
     before do
       handle(payload: { 'cmd' => 'new_session' })
-      allow(hermes).to receive(:chat).and_return('Agent reply')
+      allow(hermes).to receive(:chat_streaming) do |_messages, &on_chunk|
+        on_chunk.call('Agent ')
+        on_chunk.call('reply')
+      end
       stub_request(:get, /messages.setActivity/).to_return(status: 200, body: '{}')
     end
 
     it 'sends message to hermes and saves history' do
       handle(text: 'Hello')
+      wait_for_inflight
       session = bot.instance_variable_get(:@session)
       expect(session.messages.length).to eq(2)
+    end
+
+    it 'handles stop_request command' do
+      handle(payload: { 'cmd' => 'stop_request' })
+      expect(WebMock).to(have_requested(:get, /messages.send/)
+        .with { |req| CGI.unescape(req.uri.query).include?('Запрос остановлен.') })
     end
 
     it 'transitions to confirming_clear on clear_history' do
@@ -81,17 +96,23 @@ RSpec.describe Bot do
     end
 
     it 'handles HermesClient::Error gracefully' do
-      allow(hermes).to receive(:chat).and_raise(HermesClient::Error, '500')
-      expect { handle(text: 'Hi') }.not_to raise_error
+      allow(hermes).to receive(:chat_streaming).and_raise(HermesClient::Error, '500')
+      expect do
+        handle(text: 'Hi')
+        wait_for_inflight
+      end.not_to raise_error
     end
   end
 
   context 'in :confirming_clear state' do
     before do
       handle(payload: { 'cmd' => 'new_session' })
-      allow(hermes).to receive(:chat).and_return('reply')
+      allow(hermes).to receive(:chat_streaming) do |_messages, &on_chunk|
+        on_chunk.call('reply')
+      end
       stub_request(:get, /messages.setActivity/).to_return(status: 200, body: '{}')
       handle(text: 'Hello')
+      wait_for_inflight
       handle(payload: { 'cmd' => 'clear_history' })
     end
 

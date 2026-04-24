@@ -7,8 +7,7 @@ class HermesClient
   class Error < StandardError; end
 
   # Prepares persistent HTTP connection with auth and timeouts.
-  def
-  initialize(base_url:, api_key:)
+  def initialize(base_url:, api_key:)
     @conn = Faraday.new(url: base_url) do |f|
       f.headers['Authorization'] = "Bearer #{api_key}" unless api_key.to_s.strip.empty?
       f.headers['Content-Type'] = 'application/json'
@@ -26,6 +25,26 @@ class HermesClient
 
     JSON.parse(response.body).dig('choices', 0, 'message', 'content') ||
       raise(Error, 'Empty response')
+  end
+
+  def chat_streaming(messages, &on_chunk)
+    @conn.post('/v1/chat/completions') do |req|
+      req.body = JSON.dump({ model: 'hermes-agent', messages: messages, stream: true })
+      req.options.on_data = proc do |chunk, _bytes|
+        chunk.split("\n").each do |line|
+          next unless line.start_with?('data: ')
+
+          data = line[6..]
+          next if data == '[DONE]'
+
+          parsed = JSON.parse(data)
+          token = parsed.dig('choices', 0, 'delta', 'content')
+          on_chunk.call(token) if token
+        rescue JSON::ParserError
+          nil
+        end
+      end
+    end
   end
 
   # Health check used in the bot status command.
