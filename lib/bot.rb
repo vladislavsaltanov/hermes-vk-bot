@@ -36,19 +36,29 @@ class Bot
     restore_state(allowed_user) if allowed_user
     puts 'Bot started.'
 
-    # Recreates long-poll credentials after disconnects and recoverable failures.
     loop do
       lp = get_long_poll_server
       server = lp['server']
       key = lp['key']
       ts = lp['ts']
 
-      # Consumes updates until the current long-poll connection must be reset.
       loop do
         begin
           result = poll(server: server, key: key, ts: ts)
         rescue Net::OpenTimeout, Net::ReadTimeout => e
           puts "Poll timeout: #{e.message}, reconnecting..."
+          break
+        end
+
+        case result['failed']
+        when 1
+          ts = result['ts']
+          next
+        when 2, 3
+          puts 'Long poll key expired, reconnecting...'
+          break
+        when 4
+          puts 'Long poll version obsolete, reconnecting...'
           break
         end
 
@@ -68,13 +78,11 @@ class Bot
           @state.handle(msg['from_id'], text, parse_payload(msg['payload']))
         end
       rescue StandardError => e
-        # Keeps processing alive on unexpected handler or payload errors.
         puts "Loop error: #{e.class}: #{e.message}"
         puts e.backtrace.first(5).join("\n")
         sleep(2)
       end
     rescue StandardError => e
-      # Falls back to a delayed full restart on broader failures.
       puts "Fatal error, restarting: #{e.class}: #{e.message}"
       sleep(5)
     end
